@@ -11,8 +11,8 @@ import (
 )
 
 type UserStorage interface {
-	GetById(ctx context.Context, id int) (data.User, error)
-	New(ctx context.Context, user data.User) (data.User, error)
+	GetById(ctx context.Context, id int) (data.UserPublic, error)
+	New(ctx context.Context, user data.User) (data.UserPublic, error)
 	Delete(ctx context.Context, id int) error
 }
 
@@ -47,13 +47,13 @@ func HandleUserNew(ctx context.Context, us UserStorage) http.HandlerFunc {
 			return
 		}
 		w.Header().Set("Content-Type", "application/json")
-		user, err := us.New(ctx, user)
+		userPublic, err := us.New(ctx, user)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
 			return
 		}
 		enc := json.NewEncoder(w)
-		enc.Encode(user)
+		enc.Encode(userPublic)
 		return
 	}
 }

@@ -23,36 +23,36 @@ func newUserStoragePostgres() (*userStoragePostgres, error) {
 	}, nil
 }
 
-func (us userStoragePostgres) GetById(ctx context.Context, id int) (User, error) {
+func (us userStoragePostgres) GetById(ctx context.Context, id int) (UserPublic, error) {
 	q := `
     SELECT id, email
     FROM users
     WHERE id = $1
     `
-	var user User
+	var user UserPublic
 	row := us.pool.QueryRow(ctx, q, id)
 	err := row.Scan(&user.Id, &user.Email)
 	// TODO: refactor
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return User{}, fmt.Errorf("user with id %d does not exist: %v", id, err)
+			return UserPublic{}, fmt.Errorf("user with id %d does not exist: %v", id, err)
 		}
-		return User{}, fmt.Errorf("failed to execute query: %v", err)
+		return UserPublic{}, fmt.Errorf("failed to execute query: %v", err)
 	}
 	return user, nil
 }
 
-func (us userStoragePostgres) New(ctx context.Context, user User) (User, error) {
+func (us userStoragePostgres) New(ctx context.Context, user User) (UserPublic, error) {
 	q := `
         INSERT INTO users (email, password)
         VALUES ($1, $2)
         RETURNING id, email
     `
-	var createdUser User
+	var createdUser UserPublic
 	err := us.pool.QueryRow(ctx, q, user.Email, user.Password).Scan(&createdUser.Id, &createdUser.Email)
 	// TODO: refactor
 	if err != nil {
-		return User{}, fmt.Errorf("failed to execute query: %v", err)
+		return UserPublic{}, fmt.Errorf("failed to execute query: %v", err)
 	}
 	return createdUser, nil
 }
