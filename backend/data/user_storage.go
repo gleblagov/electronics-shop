@@ -2,8 +2,10 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"os"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -19,4 +21,55 @@ func newUserStoragePostgres() (*userStoragePostgres, error) {
 	return &userStoragePostgres{
 		pool: poolconn,
 	}, nil
+}
+
+func (us userStoragePostgres) GetById(ctx context.Context, id int) (User, error) {
+	q := `
+    SELECT id, email
+    FROM users
+    WHERE id = $1
+    `
+	var user User
+	row := us.pool.QueryRow(ctx, q, id)
+	err := row.Scan(&user.Id, &user.Email)
+	// TODO: refactor
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return User{}, fmt.Errorf("user with id %d does not exist: %v", id, err)
+		}
+		return User{}, fmt.Errorf("failed to execute query: %v", err)
+	}
+	return user, nil
+}
+
+func (us userStoragePostgres) New(ctx context.Context, user User) (User, error) {
+	q := `
+        INSERT INTO users (email, password)
+        VALUES ($1, $2)
+        RETURNING id, email
+    `
+	var createdUser User
+	err := us.pool.QueryRow(ctx, q, user.Email, user.Password).Scan(&createdUser.Id, &createdUser.Email)
+	// TODO: refactor
+	if err != nil {
+		return User{}, fmt.Errorf("failed to execute query: %v", err)
+	}
+	return createdUser, nil
+}
+
+func (us userStoragePostgres) Delete(ctx context.Context, id int) error {
+	q := `
+        DELETE FROM users
+        WHERE id = $1
+    `
+	tag, err := us.pool.Exec(ctx, q, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete user with id %d: %w", id, err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("user with id %d does not exist", id)
+	}
+
+	return nil
 }

@@ -1,7 +1,7 @@
 package data
 
 type PostgresStorage struct {
-	us *userStoragePostgres
+	Users *userStoragePostgres
 }
 
 func NewPostgresStorage() (*PostgresStorage, error) {
@@ -10,6 +10,6 @@ func NewPostgresStorage() (*PostgresStorage, error) {
 		return nil, err
 	}
 	return &PostgresStorage{
-		us: userStorage,
+		Users: userStorage,
 	}, nil
 }
