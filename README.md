@@ -16,3 +16,7 @@ API доступен на 3737 порту.
 2. `cd electronics-shop`
 3. создать файл `.env`
 4. `docker compose --env-file=.env up --build -d`
+
+# todo
+- [ ] логи
+- [ ] все TODO
