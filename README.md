@@ -1,4 +1,4 @@
-# initial commit =)
+# Бэкенд для магазина электроники
 
 # .env
 ```
@@ -16,6 +16,16 @@ API доступен на 3737 порту.
 2. `cd electronics-shop`
 3. создать файл `.env`
 4. `docker compose --env-file=.env up --build -d`
+
+# скрипты для теста
+
+Скрипты для быстрого тестирования API лежат в `util`. 
+
+## Использование
+
+`./util/create-user.sh mail@example.com mopevm` — создание нового пользователя с электронной почтой **mail@example.com** и паролем **mopevm**.
+`./util/delete-user.sh 5` — удаление пользователя с ID 5.
+`./util/get-user.sh 5` — получение информации о пользователе с ID 5.
 
 # todo
 - [ ] логи
