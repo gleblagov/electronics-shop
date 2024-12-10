@@ -13,6 +13,9 @@ services:
     restart: always
     ports:
       - "3737:3737"
+    depends_on:
+      db:
+        condition: service_healthy
     <<: *db_environment
   db:
     image: postgres:alpine
@@ -21,7 +24,20 @@ services:
       - dbdata:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     <<: *db_environment
+  goose:
+    build:
+      context: ./migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    <<: *db_environment
+
 
 volumes:
   dbdata:
