@@ -25,7 +25,7 @@ func newUserStoragePostgres() (*userStoragePostgres, error) {
 
 func (us userStoragePostgres) GetById(ctx context.Context, id int) (UserPublic, error) {
 	q := `
-    SELECT id, email
+    SELECT id, email, role
     FROM users
     WHERE id = $1
     `
@@ -44,12 +44,12 @@ func (us userStoragePostgres) GetById(ctx context.Context, id int) (UserPublic, 
 
 func (us userStoragePostgres) New(ctx context.Context, user User) (UserPublic, error) {
 	q := `
-        INSERT INTO users (email, password)
-        VALUES ($1, $2)
-        RETURNING id, email
+        INSERT INTO users (email, password, role)
+        VALUES ($1, $2, $3)
+        RETURNING id, email, role
     `
 	var createdUser UserPublic
-	err := us.pool.QueryRow(ctx, q, user.Email, user.Password).Scan(&createdUser.Id, &createdUser.Email)
+	err := us.pool.QueryRow(ctx, q, user.Email, user.Password, user.Role).Scan(&createdUser.Id, &createdUser.Email, &createdUser.Role)
 	// TODO: refactor
 	if err != nil {
 		return UserPublic{}, fmt.Errorf("failed to execute query: %v", err)

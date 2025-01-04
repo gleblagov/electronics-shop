@@ -1,5 +1,11 @@
 package data
 
+const (
+	RoleClient string = "client"
+	RoleSeller string = "seller"
+	RoleAdmin  string = "admin"
+)
+
 type User struct {
 	UserPublic
 	Password string `json:"password"`
@@ -8,4 +14,5 @@ type User struct {
 type UserPublic struct {
 	Id    int    `json:"id"`
 	Email string `json:"email"`
+	Role  string `json:"role"`
 }
