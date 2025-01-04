@@ -23,12 +23,8 @@ API доступен на 3737 порту.
 
 ## Использование
 
-`./util/create-user.sh mail@example.com mopevm` — создание нового пользователя с электронной почтой **mail@example.com** и паролем **mopevm**.
+`./util/create-user.sh mail@example.com mopevm $роль` — создание нового пользователя с электронной почтой **mail@example.com** и паролем **mopevm**. $роль = {admin/client/seller}.
 
 `./util/delete-user.sh 5` — удаление пользователя с ID 5.
 
 `./util/get-user.sh 5` — получение информации о пользователе с ID 5.
-
-# todo
-- [ ] логи
-- [ ] все TODO
