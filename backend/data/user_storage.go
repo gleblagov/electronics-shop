@@ -57,6 +57,21 @@ func (us userStoragePostgres) New(ctx context.Context, user User) (UserPublic, e
 	return createdUser, nil
 }
 
+func (us userStoragePostgres) Update(ctx context.Context, id int, newBody User) (UserPublic, error) {
+	q := `
+	UPDATE users
+	SET email = $1, password = $2, role = $3
+	WHERE id = $4
+	RETURNING id, email, role
+	`
+	var updatedUser UserPublic
+	err := us.pool.QueryRow(ctx, q, newBody.Email, newBody.Password, newBody.Role, id).Scan(&updatedUser.Id, &updatedUser.Email, &updatedUser.Role)
+	if err != nil {
+		return UserPublic{}, fmt.Errorf("failed to execute query: %v", err)
+	}
+	return updatedUser, nil
+}
+
 func (us userStoragePostgres) Delete(ctx context.Context, id int) error {
 	q := `
         DELETE FROM users

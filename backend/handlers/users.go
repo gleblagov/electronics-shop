@@ -14,6 +14,7 @@ type UserStorage interface {
 	GetById(ctx context.Context, id int) (data.UserPublic, error)
 	New(ctx context.Context, user data.User) (data.UserPublic, error)
 	Delete(ctx context.Context, id int) error
+	Update(ctx context.Context, id int, newBody data.User) (data.UserPublic, error)
 }
 
 func HandleUserGetById(ctx context.Context, us UserStorage) http.HandlerFunc {
@@ -74,6 +75,34 @@ func HandleUserDelete(ctx context.Context, us UserStorage) http.HandlerFunc {
 			return
 		}
 		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+}
+
+func HandleUserUpdate(ctx context.Context, us UserStorage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idRaw := r.PathValue("id")
+		id, err := strconv.Atoi(idRaw)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusBadRequest)
+			return
+		}
+
+		var body data.User
+		// TODO: validation
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusBadRequest)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		userPublic, err := us.Update(ctx, id, body)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error: %s", err), http.StatusInternalServerError)
+			return
+		}
+		enc := json.NewEncoder(w)
+		enc.Encode(userPublic)
 		return
 	}
 }
