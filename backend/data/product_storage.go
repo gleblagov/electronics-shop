@@ -31,7 +31,7 @@ func (ps productStoragePostgres) GetById(ctx context.Context, id int) (Product, 
     `
 	var product Product
 	row := ps.pool.QueryRow(ctx, q, id)
-	err := row.Scan(&product.Id, &product.Price, &product.Quantity, &product.Category, &product.Rating)
+	err := row.Scan(&product.Id, &product.Title, &product.Price, &product.Quantity, &product.Category, &product.Rating)
 	// TODO: refactor
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -44,12 +44,12 @@ func (ps productStoragePostgres) GetById(ctx context.Context, id int) (Product, 
 
 func (ps productStoragePostgres) New(ctx context.Context, product Product) (Product, error) {
 	q := `
-        INSERT INTO products (price, title, quantity, category)
-        VALUES ($1, $2, $3)
+        INSERT INTO products (price, title, quantity, category, rating)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING id, title, price, quantity, category, rating
     `
 	var createdProduct Product
-	err := ps.pool.QueryRow(ctx, q, product.Price, product.Title, product.Quantity, product.Category).
+	err := ps.pool.QueryRow(ctx, q, product.Price, product.Title, product.Quantity, product.Category, product.Rating).
 		Scan(&createdProduct.Id, &createdProduct.Title, &createdProduct.Price, &createdProduct.Quantity, &createdProduct.Category, &createdProduct.Rating)
 		// TODO: refactor
 	if err != nil {

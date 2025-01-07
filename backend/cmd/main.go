@@ -25,6 +25,10 @@ func main() {
 		mux.HandleFunc("POST /user", handlers.HandleUserNew(context.TODO(), ps.Users))
 		mux.HandleFunc("DELETE /user/{id}", handlers.HandleUserDelete(context.TODO(), ps.Users))
 
+		mux.HandleFunc("GET /product/{id}", handlers.HandleProductGetById(context.TODO(), ps.Products))
+		mux.HandleFunc("POST /product", handlers.HandleProductNew(context.TODO(), ps.Products))
+		mux.HandleFunc("DELETE /product/{id}", handlers.HandleProductDelete(context.TODO(), ps.Products))
+
 		mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("pong"))
 			return
