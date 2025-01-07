@@ -9,17 +9,23 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type cartStoragePostgres struct {
-	pool *pgxpool.Pool
+type ProductStorage interface {
+	GetById(ctx context.Context, id int) (Product, error)
 }
 
-func newCartStoragePostgres() (*cartStoragePostgres, error) {
+type cartStoragePostgres struct {
+	pool *pgxpool.Pool
+	ps   ProductStorage
+}
+
+func newCartStoragePostgres(ps ProductStorage) (*cartStoragePostgres, error) {
 	poolconn, err := pgxpool.New(context.Background(), os.Getenv("DB_URL"))
 	if err != nil {
 		return nil, err
 	}
 	return &cartStoragePostgres{
 		pool: poolconn,
+		ps:   ps,
 	}, nil
 }
 
@@ -92,4 +98,27 @@ func (cs cartStoragePostgres) ChangeStatus(ctx context.Context, id int, status s
 	}
 
 	return updatedCart, nil
+}
+
+func (cs cartStoragePostgres) AddProductToCart(ctx context.Context, cartId int, productId int, quantity int) (CartItem, error) {
+	product, err := cs.ps.GetById(ctx, productId)
+	if err != nil {
+		return CartItem{}, fmt.Errorf("failed to find product with id %d: %w", productId, err)
+	}
+	_, err = cs.GetById(ctx, cartId)
+	if err != nil {
+		return CartItem{}, fmt.Errorf("failed to find cart with id %d: %w", cartId, err)
+	}
+	q := `
+        INSERT INTO cart_items (cart_id, product_id, quantity, price)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, cart_id, product_id, quantity, price, total_cost
+    `
+	var addedItem CartItem
+	err = cs.pool.QueryRow(ctx, q, cartId, productId, quantity, product.Price).
+		Scan(&addedItem.Id, &addedItem.CartId, &addedItem.ProductId, &addedItem.Quantity, &addedItem.Price, &addedItem.TotalCost)
+	if err != nil {
+		return CartItem{}, fmt.Errorf("failed to execute query: %v", err)
+	}
+	return addedItem, nil
 }

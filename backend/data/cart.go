@@ -11,9 +11,9 @@ type Cart struct {
 }
 
 type CartItem struct {
-	ID        int     `json:"id"`
-	CartID    int     `json:"cart_id"`
-	ProductID int     `json:"product_id"`
+	Id        int     `json:"id"`
+	CartId    int     `json:"cart_id"`
+	ProductId int     `json:"product_id"`
 	Quantity  int     `json:"quantity"`
 	Price     float64 `json:"price"`
 	TotalCost float64 `json:"total_cost"`

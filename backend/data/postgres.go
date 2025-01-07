@@ -9,7 +9,7 @@ type PostgresStorage struct {
 func NewPostgresStorage() (*PostgresStorage, error) {
 	userStorage, err := newUserStoragePostgres()
 	productStorage, err := newProductStoragePostgres()
-	cartStorage, err := newCartStoragePostgres()
+	cartStorage, err := newCartStoragePostgres(productStorage)
 	if err != nil {
 		return nil, err
 	}
