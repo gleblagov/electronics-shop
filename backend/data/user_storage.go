@@ -31,7 +31,7 @@ func (us userStoragePostgres) GetById(ctx context.Context, id int) (UserPublic, 
     `
 	var user UserPublic
 	row := us.pool.QueryRow(ctx, q, id)
-	err := row.Scan(&user.Id, &user.Email)
+	err := row.Scan(&user.Id, &user.Email, &user.Role)
 	// TODO: refactor
 	if err != nil {
 		if err == pgx.ErrNoRows {
