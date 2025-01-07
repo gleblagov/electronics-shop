@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE cart_items (
-    id INTEGER PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS cart_items (
+    id SERIAL PRIMARY KEY,
     cart_id INTEGER NOT NULL REFERENCES carts(id),
     product_id INTEGER NOT NULL REFERENCES products(id),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
