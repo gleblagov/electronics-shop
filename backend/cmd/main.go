@@ -30,6 +30,10 @@ func main() {
 		mux.HandleFunc("POST /product", handlers.HandleProductNew(context.TODO(), ps.Products))
 		mux.HandleFunc("DELETE /product/{id}", handlers.HandleProductDelete(context.TODO(), ps.Products))
 
+		mux.HandleFunc("GET /cart/{id}", handlers.HandleCartGetById(context.TODO(), ps.Carts))
+		mux.HandleFunc("POST /cart", handlers.HandleCartNew(context.TODO(), ps.Carts))
+		mux.HandleFunc("PATCH /cart/{id}", handlers.HandleCartChangeStatus(context.TODO(), ps.Carts))
+
 		mux.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("pong"))
 			return
