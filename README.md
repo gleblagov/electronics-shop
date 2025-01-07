@@ -41,3 +41,12 @@ API доступен на 3737 порту.
 `./delete-product.sh 5` — удаление товара с ID 5.
 
 `./get-product.sh 5` — получение информации о товаре с ID 5.
+
+
+### util/cart
+
+`./change-cart-status.sh 5 $status` — обновления статуса корзины с ID **5** на $статус = {created/closed/purchased}.
+
+`./create-cart.sh 5` — создание новой корзины для пользователя с ID **5**.
+
+`./get-cart.sh 5` — получение информации о корзине с ID **5**.
