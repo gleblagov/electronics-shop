@@ -24,6 +24,25 @@ func newUserStoragePostgres() (*userStoragePostgres, error) {
 	}, nil
 }
 
+func (us userStoragePostgres) GetByEmail(ctx context.Context, email string) (User, error) {
+	q := `
+    SELECT *
+    FROM users
+    WHERE email = $1
+    `
+	var user User
+	row := us.pool.QueryRow(ctx, q, email)
+	err := row.Scan(&user.Id, &user.Email, &user.Password, &user.Role)
+	// TODO: refactor
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return User{}, fmt.Errorf("user with email %s does not exist: %v", email, err)
+		}
+		return User{}, fmt.Errorf("failed to execute query: %v", err)
+	}
+	return user, nil
+}
+
 func (us userStoragePostgres) GetById(ctx context.Context, id int) (UserPublic, error) {
 	q := `
     SELECT id, email, role

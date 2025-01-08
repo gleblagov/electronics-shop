@@ -22,6 +22,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		mux.HandleFunc("GET /user/{id}", handlers.HandleUserGetById(context.TODO(), ps.Users))
+		mux.HandleFunc("POST /user/login", handlers.HandleUserLogin(context.TODO(), ps.Users))
 		mux.HandleFunc("POST /user", handlers.HandleUserNew(context.TODO(), ps.Users))
 		mux.HandleFunc("DELETE /user/{id}", handlers.HandleUserDelete(context.TODO(), ps.Users))
 		mux.HandleFunc("PATCH /user/{id}", handlers.HandleUserUpdate(context.TODO(), ps.Users))
