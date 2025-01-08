@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gleblagov/electronics-shop/utils"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -43,13 +44,17 @@ func (us userStoragePostgres) GetById(ctx context.Context, id int) (UserPublic, 
 }
 
 func (us userStoragePostgres) New(ctx context.Context, user User) (UserPublic, error) {
+	hashedPass, err := utils.HashPass(user.Password)
+	if err != nil {
+		return UserPublic{}, fmt.Errorf("failed to hash pass: %v", err)
+	}
 	q := `
         INSERT INTO users (email, password, role)
         VALUES ($1, $2, $3)
         RETURNING id, email, role
     `
 	var createdUser UserPublic
-	err := us.pool.QueryRow(ctx, q, user.Email, user.Password, user.Role).Scan(&createdUser.Id, &createdUser.Email, &createdUser.Role)
+	err = us.pool.QueryRow(ctx, q, user.Email, hashedPass, user.Role).Scan(&createdUser.Id, &createdUser.Email, &createdUser.Role)
 	// TODO: refactor
 	if err != nil {
 		return UserPublic{}, fmt.Errorf("failed to execute query: %v", err)
@@ -58,6 +63,10 @@ func (us userStoragePostgres) New(ctx context.Context, user User) (UserPublic, e
 }
 
 func (us userStoragePostgres) Update(ctx context.Context, id int, newBody User) (UserPublic, error) {
+	hashedPass, err := utils.HashPass(newBody.Password)
+	if err != nil {
+		return UserPublic{}, fmt.Errorf("failed to hash pass: %v", err)
+	}
 	q := `
 	UPDATE users
 	SET email = $1, password = $2, role = $3
@@ -65,7 +74,7 @@ func (us userStoragePostgres) Update(ctx context.Context, id int, newBody User) 
 	RETURNING id, email, role
 	`
 	var updatedUser UserPublic
-	err := us.pool.QueryRow(ctx, q, newBody.Email, newBody.Password, newBody.Role, id).Scan(&updatedUser.Id, &updatedUser.Email, &updatedUser.Role)
+	err = us.pool.QueryRow(ctx, q, newBody.Email, hashedPass, newBody.Role, id).Scan(&updatedUser.Id, &updatedUser.Email, &updatedUser.Role)
 	if err != nil {
 		return UserPublic{}, fmt.Errorf("failed to execute query: %v", err)
 	}
