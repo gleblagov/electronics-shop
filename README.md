@@ -6,6 +6,7 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=mopevm3737
 POSTGRES_HOST=db
 POSTGRES_DB=postgres
+JWT_SECRET_KEY=mopevm
 ```
 
 # как поднять
@@ -32,6 +33,8 @@ API доступен на 3737 порту.
 `./get-user.sh 5` — получение информации о пользователе с ID 5.
 
 `./update-user.sh 5 new-mail@example.com new-password admin` — обновление существующего пользователя с ID **5**. Задаётся новая почта, новый пароль, роль **администратор**.
+
+`./login-user.sh mail@example.com mopevm` — получение токена (логин) для пользователя с электронной почтой `mail@example.com` и паролем `mopevm`.
 
 
 ### util/product
