@@ -1,5 +1,7 @@
 package data
 
+import "log/slog"
+
 type PostgresStorage struct {
 	Users    *userStoragePostgres
 	Products *productStoragePostgres
@@ -11,6 +13,7 @@ func NewPostgresStorage() (*PostgresStorage, error) {
 	productStorage, err := newProductStoragePostgres()
 	cartStorage, err := newCartStoragePostgres(productStorage)
 	if err != nil {
+		slog.Error("Failed to initialize new Postgres storage", "op", "NewPostgresStorage()", "err", err.Error())
 		return nil, err
 	}
 	return &PostgresStorage{

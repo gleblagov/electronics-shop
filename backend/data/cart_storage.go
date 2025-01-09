@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/jackc/pgx/v5"
@@ -19,10 +20,13 @@ type cartStoragePostgres struct {
 }
 
 func newCartStoragePostgres(ps ProductStorage) (*cartStoragePostgres, error) {
+	slog.Info("Initializing new cartStoragePostgres...")
 	poolconn, err := pgxpool.New(context.Background(), os.Getenv("DB_URL"))
 	if err != nil {
+		slog.Error("Failed to connect to Postgres", "op", "newCartStoragePostgres()", "err", err.Error())
 		return nil, err
 	}
+	slog.Info("Initialized cartStoragePostgres successfuly")
 	return &cartStoragePostgres{
 		pool: poolconn,
 		ps:   ps,
@@ -43,6 +47,7 @@ func (cs cartStoragePostgres) GetById(ctx context.Context, id int) (Cart, error)
 		if err == pgx.ErrNoRows {
 			return Cart{}, fmt.Errorf("cart with id %d does not exist: %v", id, err)
 		}
+		slog.Error("Failed to execute SQL query (get cart by id)", "op", "cartStoragePostgres.GetById()", "err", err.Error())
 		return Cart{}, fmt.Errorf("failed to execute query: %v", err)
 	}
 	return cart, nil
@@ -53,6 +58,7 @@ func (cs cartStoragePostgres) New(ctx context.Context, userId int) (Cart, error)
 	checkUserQuery := `SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)`
 	err := cs.pool.QueryRow(ctx, checkUserQuery, userId).Scan(&userExists)
 	if err != nil {
+		slog.Error("Failed to execute SQL query (check if user exists)", "op", "cartStoragePostgres.New()", "err", err.Error())
 		return Cart{}, fmt.Errorf("failed to execute query: %v", err)
 	}
 	if !userExists {
@@ -68,6 +74,7 @@ func (cs cartStoragePostgres) New(ctx context.Context, userId int) (Cart, error)
 		Scan(&createdCart.Id, &createdCart.UserId, &createdCart.CreatedAt, &createdCart.UpdatedAt, &createdCart.Status)
 		// TODO: refactor
 	if err != nil {
+		slog.Error("Failed to execute SQL query (insert new cart)", "op", "cartStoragePostgres.New()", "err", err.Error())
 		return Cart{}, fmt.Errorf("failed to execute query: %v", err)
 	}
 	return createdCart, nil
@@ -94,6 +101,7 @@ func (cs cartStoragePostgres) ChangeStatus(ctx context.Context, id int, status s
 	var updatedCart Cart
 	err := cs.pool.QueryRow(ctx, q, status, id).Scan(&updatedCart.Id, &updatedCart.UserId, &updatedCart.CreatedAt, &updatedCart.UpdatedAt, &updatedCart.Status)
 	if err != nil {
+		slog.Error("Failed to execute SQL query (update cart status)", "op", "cartStoragePostgres.ChangeStatus()", "err", err.Error())
 		return Cart{}, fmt.Errorf("failed update cart status with cart id %d: %w", id, err)
 	}
 
@@ -118,6 +126,7 @@ func (cs cartStoragePostgres) AddProductToCart(ctx context.Context, cartId int, 
 	err = cs.pool.QueryRow(ctx, q, cartId, productId, quantity, product.Price).
 		Scan(&addedItem.Id, &addedItem.CartId, &addedItem.ProductId, &addedItem.Quantity, &addedItem.Price, &addedItem.TotalCost)
 	if err != nil {
+		slog.Error("Failed to execute SQL query (insert new product)", "op", "cartStoragePostgres.AddProductToCart()", "err", err.Error())
 		return CartItem{}, fmt.Errorf("failed to execute query: %v", err)
 	}
 	return addedItem, nil

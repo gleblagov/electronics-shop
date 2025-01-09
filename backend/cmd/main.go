@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/gleblagov/electronics-shop/data"
@@ -11,13 +12,17 @@ import (
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
 	ps, err := data.NewPostgresStorage()
 	if err != nil {
+		slog.Error("Failed to initialize PostgresStorage")
 		panic(err)
 	}
 
 	mux := http.NewServeMux()
-	slog.Info("starting server...")
+	slog.Info("Starting server...")
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -41,10 +46,11 @@ func main() {
 			return
 		})
 		if err := http.ListenAndServe("0.0.0.0:3737", mux); err != nil {
+			slog.Error("Failed to listen on 0.0.0.0:3737")
 			panic(err)
 		}
 		wg.Done()
 	}()
-	slog.Info("server started")
+	slog.Info("Server started")
 	wg.Wait()
 }
